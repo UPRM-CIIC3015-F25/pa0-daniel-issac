@@ -79,9 +79,12 @@ def restart():
     score = 0  # Reset player score
     moving=0
 
-def draw_text(text, font, text_col, x, y):
-  img = font.render(text, True, text_col)
-  screen.blit(img, (x, y))
+def draw_text(text, font, text_col, y):
+    img = font.render(text, True, text_col)
+    text_rect = img.get_rect()
+    text_rect.centerx = screen.get_width() // 2  # Center horizontally
+    text_rect.y = y  # Keep vertical position
+    screen.blit(img, text_rect)
 
 # General setup
 pygame.mixer.pre_init(44100, -16, 1, 1024)
@@ -117,7 +120,9 @@ player_speed = 0
 # Score Text setup
 score = 0
 high_score = 0
-basic_font = pygame.font.Font('freesansbold.ttf', 32)  # Font for displaying score
+basic_font = pygame.font.Font('PressStart2P-Regular.ttf', 24)
+score_font = pygame.font.Font('PressStart2P-Regular.ttf', 18)# Font for displaying score
+
 
 game_start=False
 start = False  # Indicates if the game has started
@@ -130,7 +135,7 @@ while True:
     if game_start == True:
         pass
     else:
-        draw_text("PONG", basic_font,TEXT_COL, screen_width / 2, screen_height / 2)
+        draw_text("PONG", basic_font,TEXT_COL, screen_height / 2)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Quit the game
             pygame.quit()
@@ -165,18 +170,18 @@ while True:
     pygame.draw.rect(screen, light_grey, player)  # Draw player paddle
 
     pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-    player_text = basic_font.render(f'Score:{score}', False, light_grey)  # Render player score
-    screen.blit(player_text, (screen_width / 6 , 10))  # Display score on screen
-
-    player_text = basic_font.render(f'High Score:{high_score}', False, light_grey)  # Render player score
-    screen.blit(player_text, (screen_width / 2, 10))  # Display score on screen
+    player_text = score_font.render(f'Score:{score} | High Score:{high_score}', False, light_grey)  # Render player score
+    text_rect = player_text.get_rect()
+    text_rect.centerx = screen.get_width() // 2
+    text_rect.y = 10
+    screen.blit(player_text, (text_rect))  # Display score on screen
 
 
     if not game_start:
-        draw_text("PONG", basic_font, TEXT_COL, screen_width / 2 - 50, 100)
+        draw_text("PONG", basic_font, TEXT_COL, 100)
     elif score==0 and moving==0:
-        draw_text("GAMEOVER", basic_font, TEXT_COL, screen_width / 2 - 98, 100)
-        draw_text("Press SPACE to Restart", basic_font, TEXT_COL, screen_width / 5 - 30, 150)
+        draw_text("GAMEOVER", basic_font, TEXT_COL, 100)
+        draw_text("Press SPACE to Restart", score_font, TEXT_COL, 150)
         screen.blit(resized_image, (170, 300))
         if not gameover_played:
             pygame.mixer.music.stop()
