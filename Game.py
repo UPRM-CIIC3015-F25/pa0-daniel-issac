@@ -1,4 +1,5 @@
 import pygame, sys, random
+from pydub import AudioSegment
 
 collision = 0
 
@@ -6,7 +7,7 @@ def ball_movement():
     """
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
-    global ball_speed_x, ball_speed_y, score, start, collision
+    global ball_speed_x, ball_speed_y, score, high_score, start, collision
 
     # Move the ball
     ball.x += ball_speed_x
@@ -27,6 +28,8 @@ def ball_movement():
         if abs(ball.bottom - player.top) < 10:  # Check if ball hits the top of the paddle
 
             score += 1  # Increase player score
+            if score > high_score:
+                high_score = score
             ball_speed_y *= -1  # Reverse ball's vertical direction
 
             # TODO Task 6: Add sound effects HERE
@@ -70,18 +73,21 @@ def restart():
     """
     Resets the ball and player scores to the initial state.
     """
-    global ball_speed_x, ball_speed_y, score
+    global ball_speed_x, ball_speed_y, score,moving
     ball.center = (screen_width / 2, screen_height / 2)  # Reset ball position to center
     ball_speed_y, ball_speed_x = 0, 0  # Stop ball movement
     score = 0  # Reset player score
+    moving=0
+
+def draw_text(text, font, text_col, x, y):
+  img = font.render(text, True, text_col)
+  screen.blit(img, (x, y))
 
 # General setup
 pygame.mixer.pre_init(44100, -16, 1, 1024)
 pygame.init()
 clock = pygame.time.Clock()
-
 pygame.mixer.music.load("background_music.mp3")
-pygame.mixer.music.play(-1)
 
 # Main Window setup
 screen_width = 500  # Screen width (can be adjusted)
@@ -91,6 +97,7 @@ pygame.display.set_caption('Pong')  # Set window title
 
 # Colors
 bg_color = pygame.Color('grey12')
+TEXT_COL = (255, 255, 255)
 
 # Game Rectangles (ball and player paddle)
 ball = pygame.Rect(screen_width / 2 - 15, screen_height / 2 - 15, 30, 30)  # Ball (centered)
@@ -106,8 +113,10 @@ player_speed = 0
 
 # Score Text setup
 score = 0
+high_score = 0
 basic_font = pygame.font.Font('freesansbold.ttf', 32)  # Font for displaying score
 
+game_start=False
 start = False  # Indicates if the game has started
 
 # Main game loop
@@ -115,6 +124,10 @@ while True:
     # Event handling
     # TODO Task 4: Add your name
     name = "Daniel F. Muñoz"
+    if game_start == True:
+        pass
+    else:
+        draw_text("PONG", basic_font,TEXT_COL, screen_width / 2, screen_height / 2)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Quit the game
             pygame.quit()
@@ -125,6 +138,11 @@ while True:
             if event.key == pygame.K_RIGHT:
                 player_speed += 6  # Move paddle right
             if event.key == pygame.K_SPACE:
+                moving=1
+                game_start = True
+                pygame.mixer.music.load("background_music.mp3")
+                pygame.mixer.music.play(-1)
+                gameover_played = False  # allow gameover sound again
                 start = True  # Start the ball movement
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
@@ -136,8 +154,6 @@ while True:
     ball_movement()
     player_movement()
 
-
-
     # Visuals
     orange = pygame.Color('orange')
     light_grey = pygame.Color('grey83')
@@ -146,8 +162,22 @@ while True:
     pygame.draw.rect(screen, light_grey, player)  # Draw player paddle
 
     pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-    player_text = basic_font.render(f'{score}', False, light_grey)  # Render player score
-    screen.blit(player_text, (screen_width/2 - 15, 10))  # Display score on screen
+    player_text = basic_font.render(f'Score:{score}', False, light_grey)  # Render player score
+    screen.blit(player_text, (screen_width / 6 , 10))  # Display score on screen
+
+    player_text = basic_font.render(f'High Score:{high_score}', False, light_grey)  # Render player score
+    screen.blit(player_text, (screen_width / 2, 10))  # Display score on screen
+
+
+    if not game_start:
+        draw_text("PONG", basic_font, TEXT_COL, screen_width / 2 - 50, 100)
+    elif score==0 and moving==0:
+        draw_text("PONG", basic_font, TEXT_COL, screen_width / 2 - 50, 100)
+        if not gameover_played:
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load("gameover.mp3")
+            pygame.mixer.music.play()
+            gameover_played = True
 
     # Update display
     pygame.display.flip()
