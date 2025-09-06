@@ -1,10 +1,12 @@
 import pygame, sys, random
 
+collision = 0
+
 def ball_movement():
     """
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
-    global ball_speed_x, ball_speed_y, score, start
+    global ball_speed_x, ball_speed_y, score, start, collision
 
     # Move the ball
     ball.x += ball_speed_x
@@ -14,12 +16,14 @@ def ball_movement():
     # TODO Task 5 Create a Merge Conflict
     speed = 7
     if start:
-        ball_speed_x = speed * random.choice((5, -5))  # Randomize initial horizontal direction
-        ball_speed_y = speed * random.choice((5, -5))  # Randomize initial vertical direction
+        ball_speed_x = speed * random.choice((1, -1))  # Randomize initial horizontal direction
+        ball_speed_y = speed * random.choice((1, -1))  # Randomize initial vertical direction
         start = False
+
 
     # Ball collision with the player paddle
     if ball.colliderect(player):
+
         if abs(ball.bottom - player.top) < 10:  # Check if ball hits the top of the paddle
 
             score += 1  # Increase player score
@@ -30,6 +34,13 @@ def ball_movement():
             sound_effect = pygame.mixer.Sound("tenisound.mp3.mp3")
             sound_effect.play()
 
+            collision += 1
+
+# when the ball collides, the speed increases
+    if collision > 9:
+        collision = 0
+        ball_speed_x -= 2
+        ball_speed_y -= 2
 
     # Ball collision with top boundary
     if ball.top <= 0:
