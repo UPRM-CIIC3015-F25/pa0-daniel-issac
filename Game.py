@@ -1,5 +1,4 @@
 import pygame, sys, random
-from pydub import AudioSegment
 
 collision = 0
 
@@ -40,6 +39,7 @@ def ball_movement():
             collision += 1
 
 # when the ball collides, the speed increases
+
     if collision > 9:
         collision = 0
         ball_speed_x -= 2
@@ -89,11 +89,14 @@ pygame.init()
 clock = pygame.time.Clock()
 pygame.mixer.music.load("background_music.mp3")
 
+
 # Main Window setup
 screen_width = 500  # Screen width (can be adjusted)
 screen_height = 500  # Screen height (can be adjusted)
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Pong')  # Set window title
+img=pygame.image.load("skill-issue.png").convert_alpha()
+resized_image = pygame.transform.scale(img, (150, 150))
 
 # Colors
 bg_color = pygame.Color('grey12')
@@ -172,11 +175,13 @@ while True:
     if not game_start:
         draw_text("PONG", basic_font, TEXT_COL, screen_width / 2 - 50, 100)
     elif score==0 and moving==0:
-        draw_text("PONG", basic_font, TEXT_COL, screen_width / 2 - 50, 100)
+        draw_text("GAMEOVER", basic_font, TEXT_COL, screen_width / 2 - 98, 100)
+        draw_text("Press SPACE to Restart", basic_font, TEXT_COL, screen_width / 5 - 30, 150)
+        screen.blit(resized_image, (170, 300))
         if not gameover_played:
             pygame.mixer.music.stop()
             pygame.mixer.music.load("gameover.mp3")
-            pygame.mixer.music.play()
+            pygame.mixer.music.play(-1)
             gameover_played = True
 
     # Update display
