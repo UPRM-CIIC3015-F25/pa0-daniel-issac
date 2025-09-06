@@ -14,7 +14,7 @@ def ball_movement():
     # TODO Task 5 Create a Merge Conflict
     speed = 7
     if start:
-        ball_speed_x = speed * random.choice((1, -1))  # Randomize initial horizontal direction
+        ball_speed_x = speed * random.choice((7, 10))  # Randomize initial horizontal direction
         ball_speed_y = speed * random.choice((1, -1))  # Randomize initial vertical direction
         start = False
 
@@ -24,6 +24,8 @@ def ball_movement():
 
             score += 1  # Increase player score
             ball_speed_y *= -1  # Reverse ball's vertical direction
+
+            
 
             # TODO Task 6: Add sound effects HERE
             pygame.mixer.init()
