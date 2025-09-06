@@ -2,15 +2,21 @@ import pygame, sys, random
 
 collision = 0
 
+
+
 def ball_movement():
     """
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
-    global ball_speed_x, ball_speed_y, score, high_score, start, collision
+    global ball_speed_x, ball_speed_y, score, high_score, start, collision,flash_timer
 
     # Move the ball
     ball.x += ball_speed_x
     ball.y += ball_speed_y
+
+    max_speed = 40
+    ball_speed_x = max(-max_speed, min(ball_speed_x, max_speed))
+    ball_speed_y = max(-max_speed, min(ball_speed_y, max_speed))
 
     # Start the ball movement when the game begins
     # TODO Task 5 Create a Merge Conflict
@@ -42,8 +48,12 @@ def ball_movement():
 
     if collision > 9:
         collision = 0
-        ball_speed_x -= 2
-        ball_speed_y -= 2
+        ball_speed_x *= 1.2
+        ball_speed_y *= 1.2
+        pygame.mixer.init()
+        speed_up = pygame.mixer.Sound("fruit4.wav")
+        speed_up.play()
+        flash_timer = 30
 
     # Ball collision with top boundary
     if ball.top <= 0:
@@ -55,6 +65,7 @@ def ball_movement():
 
     # Ball goes below the bottom boundary (missed by player)
     if ball.bottom > screen_height:
+        collision = 0
         restart()  # Reset the game
 
 def player_movement():
@@ -73,11 +84,12 @@ def restart():
     """
     Resets the ball and player scores to the initial state.
     """
-    global ball_speed_x, ball_speed_y, score,moving
+    global ball_speed_x, ball_speed_y, score,moving, game_state, last_score
     ball.center = (screen_width / 2, screen_height / 2)  # Reset ball position to center
     ball_speed_y, ball_speed_x = 0, 0  # Stop ball movement
+    last_score = score
     score = 0  # Reset player score
-    moving=0
+    game_state = "gameover"
 
 def draw_text(text, font, text_col, y):
     img = font.render(text, True, text_col)
@@ -104,9 +116,11 @@ resized_image = pygame.transform.scale(img, (150, 150))
 # Colors
 bg_color = pygame.Color('grey12')
 TEXT_COL = (255, 255, 255)
+flash_timer = 0
 
 # Game Rectangles (ball and player paddle)
 ball = pygame.Rect(screen_width / 2 - 15, screen_height / 2 - 15, 30, 30)  # Ball (centered)
+ball2 = pygame.Rect(screen_width / 2 - 15, screen_height / 2 - 15, 30, 30)
 
 player_height = 15
 player_width = 200
@@ -115,16 +129,21 @@ player = pygame.Rect(screen_width/2 - 45, screen_height - 20, player_width, play
 # Game Variables
 ball_speed_x = 0
 ball_speed_y = 0
+ball2_speed_x = 0
+ball2_speed_y = 0
 player_speed = 0
 
 # Score Text setup
 score = 0
 high_score = 0
+last_score = score
 basic_font = pygame.font.Font('PressStart2P-Regular.ttf', 24)
 score_font = pygame.font.Font('PressStart2P-Regular.ttf', 18)# Font for displaying score
+smaler_font=pygame.font.Font('PressStart2P-Regular.ttf', 12)
 
-
+menu_played=False
 game_start=False
+game_state="menu"
 start = False  # Indicates if the game has started
 
 # Main game loop
@@ -132,10 +151,6 @@ while True:
     # Event handling
     # TODO Task 4: Add your name
     name = "Daniel F. Muñoz"
-    if game_start == True:
-        pass
-    else:
-        draw_text("PONG", basic_font,TEXT_COL, screen_height / 2)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Quit the game
             pygame.quit()
@@ -146,49 +161,73 @@ while True:
             if event.key == pygame.K_RIGHT:
                 player_speed += 6  # Move paddle right
             if event.key == pygame.K_SPACE:
-                moving=1
-                game_start = True
-                pygame.mixer.music.load("background_music.mp3")
-                pygame.mixer.music.play(-1)
-                gameover_played = False  # allow gameover sound again
-                start = True  # Start the ball movement
+                if game_state == "menu" or game_state == "gameover":
+                    moving=1
+                    game_state = "play"
+                    pygame.mixer.music.load("background_music.mp3")
+                    pygame.mixer.music.play(-1)
+                    gameover_played = False  # allow gameover sound again
+                    menu_played = False
+                    start = True  # Start the ball movement
+                elif game_state == "play":
+                    restart()
+            if event.key == pygame.K_ESCAPE:
+                game_state="menu"
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 player_speed += 6  # Stop moving left
             if event.key == pygame.K_RIGHT:
                 player_speed -= 6  # Stop moving right
-    
-    # Game Logic
-    ball_movement()
-    player_movement()
-
-    # Visuals
-    orange = pygame.Color('orange')
-    light_grey = pygame.Color('grey83')
-    red = pygame.Color('red')
-    screen.fill(bg_color)  # Clear screen with background color
-    pygame.draw.rect(screen, light_grey, player)  # Draw player paddle
-
-    pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-    player_text = score_font.render(f'Score:{score} | High Score:{high_score}', False, light_grey)  # Render player score
-    text_rect = player_text.get_rect()
-    text_rect.centerx = screen.get_width() // 2
-    text_rect.y = 10
-    screen.blit(player_text, (text_rect))  # Display score on screen
 
 
-    if not game_start:
+    if game_state=="menu":
+        screen.fill(bg_color)
         draw_text("PONG", basic_font, TEXT_COL, 100)
-    elif score==0 and moving==0:
+        draw_text("Press SPACE to start", basic_font, TEXT_COL, 200)
+        pygame.display.flip()
+        if not menu_played:
+            pygame.mixer.music.load("Thank You For Your Patience (2).mp3")
+            pygame.mixer.music.play(-1)
+            menu_played = True
+        continue
+    elif game_state=="gameover":
+        screen.fill(bg_color)
         draw_text("GAMEOVER", basic_font, TEXT_COL, 100)
-        draw_text("Press SPACE to Restart", score_font, TEXT_COL, 150)
+        draw_text(f" Your score: {last_score}", basic_font, TEXT_COL, 150)
+        draw_text("Press SPACE to Restart", score_font, TEXT_COL, 200)
+        draw_text("Press ESC to go back to the menu", smaler_font, TEXT_COL, 220)
         screen.blit(resized_image, (170, 300))
         if not gameover_played:
             pygame.mixer.music.stop()
             pygame.mixer.music.load("gameover.mp3")
             pygame.mixer.music.play(-1)
             gameover_played = True
+        pygame.display.flip()
+        continue
+    else:
+    # Game Logic
+        ball_movement()
+        player_movement()
 
-    # Update display
-    pygame.display.flip()
-    clock.tick(60)  # Maintain 60 frames per second
+        # Visuals
+        orange = pygame.Color('orange')
+        light_grey = pygame.Color('grey83')
+        red = pygame.Color('red')
+        screen.fill(bg_color)  # Clear screen with background color
+        pygame.draw.rect(screen, light_grey, player)  # Draw player paddle
+
+        pygame.draw.ellipse(screen, orange, ball)  # Draw ball
+        player_text = score_font.render(f'Score:{score} | High Score:{high_score}', False, light_grey)  # Render player score
+        text_rect = player_text.get_rect()
+        text_rect.centerx = screen.get_width() // 2
+        text_rect.y = 10
+        screen.blit(player_text, (text_rect))  # Display score on screen
+
+        if flash_timer > 0 and ball_speed_x ==60:
+            draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
+            flash_timer -= 1  # count down each frame
+
+
+        # Update display
+        pygame.display.flip()
+        clock.tick(60)  # Maintain 60 frames per second
