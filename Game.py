@@ -14,7 +14,7 @@ def ball_movement():
     ball.x += ball_speed_x
     ball.y += ball_speed_y
 
-    max_speed = 40
+    max_speed = 30
     ball_speed_x = max(-max_speed, min(ball_speed_x, max_speed))
     ball_speed_y = max(-max_speed, min(ball_speed_y, max_speed))
 
@@ -47,13 +47,15 @@ def ball_movement():
 # when the ball collides, the speed increases
 
     if collision > 9:
-        collision = 0
-        ball_speed_x *= 1.2
-        ball_speed_y *= 1.2
-        pygame.mixer.init()
-        speed_up = pygame.mixer.Sound("fruit4.wav")
-        speed_up.play()
-        flash_timer = 30
+        if abs(ball_speed_x) < max_speed and abs(ball_speed_y) < max_speed: #checks the absolute speed (positive) to see if we are pass the speed limit
+            collision = 0
+            ball_speed_x *= 1.2
+            ball_speed_y *= 1.2
+            speed_up = pygame.mixer.Sound("fruit4.wav")
+            speed_up.play()
+            flash_timer = 30
+        else:
+            collision = 0  # reset collision even if max speed reached
 
     # Ball collision with top boundary
     if ball.top <= 0:
@@ -136,6 +138,7 @@ player_speed = 0
 # Score Text setup
 score = 0
 high_score = 0
+high_score_active=0
 last_score = score
 basic_font = pygame.font.Font('PressStart2P-Regular.ttf', 24)
 score_font = pygame.font.Font('PressStart2P-Regular.ttf', 18)# Font for displaying score
@@ -184,8 +187,10 @@ while True:
         screen.fill(bg_color)
         draw_text("PONG", basic_font, TEXT_COL, 100)
         draw_text("Press SPACE to start", basic_font, TEXT_COL, 200)
+        draw_text("Music from Five Nights at Freddy 6",smaler_font, TEXT_COL, 400)
         pygame.display.flip()
         if not menu_played:
+            pygame.mixer.init()
             pygame.mixer.music.load("Thank You For Your Patience (2).mp3")
             pygame.mixer.music.play(-1)
             menu_played = True
@@ -197,6 +202,11 @@ while True:
         draw_text("Press SPACE to Restart", score_font, TEXT_COL, 200)
         draw_text("Press ESC to go back to the menu", smaler_font, TEXT_COL, 220)
         screen.blit(resized_image, (170, 300))
+        if high_score_active == 1:
+            pygame.mixer.init()
+            high_score_achived = pygame.mixer.Sound("high_score.wav")
+            high_score_achived.play()
+            high_score_active = 0
         if not gameover_played:
             pygame.mixer.music.stop()
             pygame.mixer.music.load("gameover.mp3")
@@ -223,10 +233,16 @@ while True:
         text_rect.y = 10
         screen.blit(player_text, (text_rect))  # Display score on screen
 
-        if flash_timer > 0 and ball_speed_x ==60:
+        if score == 0:
+            draw_text("Press SPACE to Restart (GameOver)",smaler_font, TEXT_COL, 40)
+            draw_text("Press ESC to go back to menu", smaler_font, TEXT_COL, 60)
+
+        if flash_timer > 0:
             draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
             flash_timer -= 1  # count down each frame
 
+        if not(score < high_score):
+            high_score_active=1
 
         # Update display
         pygame.display.flip()
