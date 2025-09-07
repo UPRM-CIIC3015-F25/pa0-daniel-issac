@@ -8,15 +8,15 @@ def ball_movement():
     """
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
-    global ball_speed_x, ball_speed_y, score, high_score, start, collision,flash_timer
+    global ball_speed_x, ball_speed_y, score, high_score, start, collision,flash_timer, game_state
 
     # Move the ball
     ball.x += ball_speed_x
     ball.y += ball_speed_y
 
     max_speed = 30
-    ball_speed_x = max(-max_speed, min(ball_speed_x, max_speed))
-    ball_speed_y = max(-max_speed, min(ball_speed_y, max_speed))
+    ball_speed_x = max(-max_speed, min(ball_speed_x, max_speed)) #caps the speed
+    ball_speed_y = max(-max_speed, min(ball_speed_y, max_speed)) #caps the speed
 
     # Start the ball movement when the game begins
     # TODO Task 5 Create a Merge Conflict
@@ -53,7 +53,7 @@ def ball_movement():
             ball_speed_y *= 1.2
             speed_up = pygame.mixer.Sound("fruit4.wav")
             speed_up.play()
-            flash_timer = 30
+            flash_timer = 30 # for the displaying of the text
         else:
             collision = 0  # reset collision even if max speed reached
 
@@ -69,6 +69,7 @@ def ball_movement():
     if ball.bottom > screen_height:
         collision = 0
         restart()  # Reset the game
+        game_state = "gameover"
 
 def player_movement():
     """
@@ -91,7 +92,6 @@ def restart():
     ball_speed_y, ball_speed_x = 0, 0  # Stop ball movement
     last_score = score
     score = 0  # Reset player score
-    game_state = "gameover"
 
 def draw_text(text, font, text_col, y):
     img = font.render(text, True, text_col)
@@ -112,7 +112,7 @@ screen_width = 500  # Screen width (can be adjusted)
 screen_height = 500  # Screen height (can be adjusted)
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Pong')  # Set window title
-img=pygame.image.load("skill-issue.png").convert_alpha()
+img=pygame.image.load("skill-issue.png").convert_alpha() # Load the gameover pic and converts alpha to change the size
 resized_image = pygame.transform.scale(img, (150, 150))
 
 # Colors
@@ -122,7 +122,6 @@ flash_timer = 0
 
 # Game Rectangles (ball and player paddle)
 ball = pygame.Rect(screen_width / 2 - 15, screen_height / 2 - 15, 30, 30)  # Ball (centered)
-ball2 = pygame.Rect(screen_width / 2 - 15, screen_height / 2 - 15, 30, 30)
 
 player_height = 15
 player_width = 200
@@ -131,8 +130,6 @@ player = pygame.Rect(screen_width/2 - 45, screen_height - 20, player_width, play
 # Game Variables
 ball_speed_x = 0
 ball_speed_y = 0
-ball2_speed_x = 0
-ball2_speed_y = 0
 player_speed = 0
 
 # Score Text setup
@@ -140,9 +137,9 @@ score = 0
 high_score = 0
 high_score_active=0
 last_score = score
-basic_font = pygame.font.Font('PressStart2P-Regular.ttf', 24)
-score_font = pygame.font.Font('PressStart2P-Regular.ttf', 18)# Font for displaying score
-smaler_font=pygame.font.Font('PressStart2P-Regular.ttf', 12)
+basic_font = pygame.font.Font('PressStart2P-Regular.ttf', 24)# Bigger Font
+score_font = pygame.font.Font('PressStart2P-Regular.ttf', 18)# Medium Font
+smaler_font=pygame.font.Font('PressStart2P-Regular.ttf', 12)# Small Font
 
 menu_played=False
 game_start=False
@@ -170,12 +167,14 @@ while True:
                     pygame.mixer.music.load("background_music.mp3")
                     pygame.mixer.music.play(-1)
                     gameover_played = False  # allow gameover sound again
-                    menu_played = False
+                    menu_played = False # allow menu sound again
                     start = True  # Start the ball movement
                 elif game_state == "play":
-                    restart()
+                    restart() # Restart
+                    game_state = "gameover"
             if event.key == pygame.K_ESCAPE:
                 game_state="menu"
+                restart()
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 player_speed += 6  # Stop moving left
@@ -184,6 +183,7 @@ while True:
 
 
     if game_state=="menu":
+        start = False
         screen.fill(bg_color)
         draw_text("PONG", basic_font, TEXT_COL, 100)
         draw_text("Press SPACE to start", basic_font, TEXT_COL, 200)
@@ -227,21 +227,21 @@ while True:
         pygame.draw.rect(screen, light_grey, player)  # Draw player paddle
 
         pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-        player_text = score_font.render(f'Score:{score} | High Score:{high_score}', False, light_grey)  # Render player score
+        player_text = score_font.render(f'Score:{score} | High Score:{high_score}', False, light_grey)  # Render player score and high score
         text_rect = player_text.get_rect()
         text_rect.centerx = screen.get_width() // 2
         text_rect.y = 10
         screen.blit(player_text, (text_rect))  # Display score on screen
 
-        if score == 0:
+        if score == 0:  #When starting the game, info to restart and go back to the menu
             draw_text("Press SPACE to Restart (GameOver)",smaler_font, TEXT_COL, 40)
             draw_text("Press ESC to go back to menu", smaler_font, TEXT_COL, 60)
 
-        if flash_timer > 0:
+        if flash_timer > 0: # Display for that the speed changed
             draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
             flash_timer -= 1  # count down each frame
 
-        if not(score < high_score):
+        if not(score < high_score): #flag to check if high score has been beaten (for sound effect)
             high_score_active=1
 
         # Update display
