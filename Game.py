@@ -4,11 +4,11 @@ collision = 0
 
 
 
-def ball_movement():
+def ball_movement(dificult):
     """
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
-    global ball_speed_x, ball_speed_y, score, high_score, start, collision,flash_timer, game_state
+    global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, start, collision,flash_timer, game_state
 
     # Move the ball
     ball.x += ball_speed_x
@@ -33,8 +33,17 @@ def ball_movement():
         if abs(ball.bottom - player.top) < 10:  # Check if ball hits the top of the paddle
 
             score += 1  # Increase player score
-            if score > high_score:
-                high_score = score
+
+            if dificult == "easy":
+                if score > easy_high_score:
+                    easy_high_score = score
+            elif dificult == "medium":
+                if score > medium_high_score:
+                    medium_high_score = score
+            else:
+                if score > hard_high_score:
+                    hard_high_score = score
+
             ball_speed_y *= -1  # Reverse ball's vertical direction
 
             # TODO Task 6: Add sound effects HERE
@@ -45,17 +54,17 @@ def ball_movement():
             collision += 1
 
 # when the ball collides, the speed increases
-
-    if collision > 9:
-        if abs(ball_speed_x) < max_speed and abs(ball_speed_y) < max_speed: #checks the absolute speed (positive) to see if we are pass the speed limit
-            collision = 0
-            ball_speed_x *= 1.2
-            ball_speed_y *= 1.2
-            speed_up = pygame.mixer.Sound("music/speed_up.wav")
-            speed_up.play()
-            flash_timer = 30 # for the displaying of the text
-        else:
-            collision = 0  # reset collision even if max speed reached
+    if dificult == "medium" or dificult == "hard":
+        if collision > 9:
+            if abs(ball_speed_x) < max_speed and abs(ball_speed_y) < max_speed: #checks the absolute speed (positive) to see if we are pass the speed limit
+                collision = 0
+                ball_speed_x *= 1.2
+                ball_speed_y *= 1.2
+                speed_up = pygame.mixer.Sound("music/speed_up.wav")
+                speed_up.play()
+                flash_timer = 30 # for the displaying of the text
+            else:
+                collision = 0  # reset collision even if max speed reached
 
     # Ball collision with top boundary
     if ball.top <= 0:
@@ -134,7 +143,9 @@ player_speed = 0
 
 # Score Text setup
 score = 0
-high_score = 0
+easy_high_score = 0
+medium_high_score = 0
+hard_high_score = 0
 high_score_active=0
 last_score = score
 basic_font = pygame.font.Font('PressStart2P-Regular.ttf', 24)# Bigger Font
@@ -144,6 +155,7 @@ smaler_font=pygame.font.Font('PressStart2P-Regular.ttf', 12)# Small Font
 menu_played=False # allow menu sound again
 game_state="menu" # Indicates if it suposse to be in menu, play or gameover
 menu_state="main"
+play_state="play"
 start = False  # Indicates if the game has started
 
 # Main game loop
@@ -176,9 +188,18 @@ while True:
                 game_state="menu"
                 menu_state = "main"
                 restart()
-            if event.key == pygame.K_1:
+            if event.key == pygame.K_4:
                 menu_state="codes"
                 print("1")
+            if event.key == pygame.K_1:
+                if game_state=="menu":
+                    play_state="easy"
+            if event.key == pygame.K_2:
+                if game_state=="menu":
+                    play_state="medium"
+            if event.key == pygame.K_3:
+                if game_state=="menu":
+                    play_state="hard"
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 player_speed += 6  # Stop moving left
@@ -197,6 +218,9 @@ while True:
             screen.fill(bg_color)
             draw_text("PONG", basic_font, TEXT_COL, 100)
             draw_text("Press SPACE to start", basic_font, TEXT_COL, 200)
+            draw_text("Press 1 to play Easy", score_font, TEXT_COL, 250)
+            draw_text("Press 2 to play Medium", score_font, TEXT_COL, 270)
+            draw_text("Press 3 to play Hard", score_font, TEXT_COL, 290)
             draw_text("Music from Five Nights at Freddy 6", smaler_font, TEXT_COL, 400)
             pygame.display.flip()
         elif menu_state=="codes":
@@ -224,11 +248,8 @@ while True:
             gameover_played = True
         pygame.display.flip()
         continue
-    else:
-    # Game Logic
-        ball_movement()
-        player_movement()
 
+    else:
         # Visuals
         orange = pygame.Color('orange')
         light_grey = pygame.Color('grey83')
@@ -236,24 +257,60 @@ while True:
         screen.fill(bg_color)  # Clear screen with background color
         pygame.draw.rect(screen, light_grey, player)  # Draw player paddle
 
-        pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-        player_text = score_font.render(f'Score:{score} | High Score:{high_score}', False, light_grey)  # Render player score and high score
-        text_rect = player_text.get_rect()
-        text_rect.centerx = screen.get_width() // 2
-        text_rect.y = 10
-        screen.blit(player_text, (text_rect))  # Display score on screen
+        if play_state == "medium":
+            pygame.draw.ellipse(screen, orange, ball)  # Draw ball
+            player_text = score_font.render(f'Score:{score} | High Score:{medium_high_score}', False, light_grey)
+            # Render player score and high score
+            text_rect = player_text.get_rect()
+            text_rect.centerx = screen.get_width() // 2
+            text_rect.y = 10
+            screen.blit(player_text, (text_rect))  # Display score on screen
 
-        if score == 0:  #When starting the game, info to restart and go back to the menu
-            draw_text("Press SPACE to Restart (GameOver)",smaler_font, TEXT_COL, 40)
-            draw_text("Press ESC to go back to menu", smaler_font, TEXT_COL, 60)
+            # Game Logic
+            ball_movement("medium")
+            player_movement()
 
-        if flash_timer > 0: # Display for that the speed changed
-            draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
-            flash_timer -= 1  # count down each frame
+            if score == 0:  #When starting the game, info to restart and go back to the menu
+                draw_text("Press SPACE to Restart (GameOver)",smaler_font, TEXT_COL, 40)
+                draw_text("Press ESC to go back to menu", smaler_font, TEXT_COL, 60)
+                draw_text("MEDIUM", score_font, TEXT_COL, 200)
 
-        if not(score < high_score): #flag to check if high score has been beaten (for sound effect)
-            high_score_active=1
+            if flash_timer > 0: # Display for that the speed changed
+                draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
+                flash_timer -= 1  # count down each frame
 
-        # Update display
-        pygame.display.flip()
-        clock.tick(60)  # Maintain 60 frames per second
+            if not(score < medium_high_score): #flag to check if high score has been beaten (for sound effect)
+                high_score_active=1
+
+            # Update display
+            pygame.display.flip()
+            clock.tick(60)  # Maintain 60 frames per second
+
+        elif play_state == "easy":
+            pygame.draw.ellipse(screen, orange, ball)  # Draw ball
+            player_text = score_font.render(f'Score:{score} | High Score:{easy_high_score}', False, light_grey)
+            # Render player score and high score
+            text_rect = player_text.get_rect()
+            text_rect.centerx = screen.get_width() // 2
+            text_rect.y = 10
+            screen.blit(player_text, (text_rect))  # Display score on screen
+
+            ball_movement("easy")
+            player_movement()
+
+            if score == 0:  # When starting the game, info to restart and go back to the menu
+                draw_text("Press SPACE to Restart (GameOver)", smaler_font, TEXT_COL, 40)
+                draw_text("Press ESC to go back to menu", smaler_font, TEXT_COL, 60)
+                draw_text("EASY", score_font, TEXT_COL, 200)
+
+            if not(score < easy_high_score): #flag to check if high score has been beaten (for sound effect)
+                high_score_active=1
+
+            # Update display
+            pygame.display.flip()
+            clock.tick(60)  # Maintain 60 frames per second
+
+
+
+        else:
+            pygame.mixer.music.stop()
