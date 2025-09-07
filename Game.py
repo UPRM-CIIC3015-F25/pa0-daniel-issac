@@ -39,7 +39,7 @@ def ball_movement():
 
             # TODO Task 6: Add sound effects HERE
             pygame.mixer.init()
-            sound_effect = pygame.mixer.Sound("tenisound.mp3.mp3")
+            sound_effect = pygame.mixer.Sound("music/tenisound.mp3.mp3")
             sound_effect.play()
 
             collision += 1
@@ -51,7 +51,7 @@ def ball_movement():
             collision = 0
             ball_speed_x *= 1.2
             ball_speed_y *= 1.2
-            speed_up = pygame.mixer.Sound("fruit4.wav")
+            speed_up = pygame.mixer.Sound("music/speed_up.wav")
             speed_up.play()
             flash_timer = 30 # for the displaying of the text
         else:
@@ -104,7 +104,7 @@ def draw_text(text, font, text_col, y):
 pygame.mixer.pre_init(44100, -16, 1, 1024)
 pygame.init()
 clock = pygame.time.Clock()
-pygame.mixer.music.load("background_music.mp3")
+pygame.mixer.music.load("music/main_game_bg_music.mp3")
 
 
 # Main Window setup
@@ -141,9 +141,9 @@ basic_font = pygame.font.Font('PressStart2P-Regular.ttf', 24)# Bigger Font
 score_font = pygame.font.Font('PressStart2P-Regular.ttf', 18)# Medium Font
 smaler_font=pygame.font.Font('PressStart2P-Regular.ttf', 12)# Small Font
 
-menu_played=False
-game_start=False
-game_state="menu"
+menu_played=False # allow menu sound again
+game_state="menu" # Indicates if it suposse to be in menu, play or gameover
+menu_state="main"
 start = False  # Indicates if the game has started
 
 # Main game loop
@@ -161,10 +161,10 @@ while True:
             if event.key == pygame.K_RIGHT:
                 player_speed += 6  # Move paddle right
             if event.key == pygame.K_SPACE:
-                if game_state == "menu" or game_state == "gameover":
+                if (game_state == "menu" and menu_state == "main")  or game_state == "gameover":
                     moving=1
                     game_state = "play"
-                    pygame.mixer.music.load("background_music.mp3")
+                    pygame.mixer.music.load("music/main_game_bg_music.mp3")
                     pygame.mixer.music.play(-1)
                     gameover_played = False  # allow gameover sound again
                     menu_played = False # allow menu sound again
@@ -174,7 +174,11 @@ while True:
                     game_state = "gameover"
             if event.key == pygame.K_ESCAPE:
                 game_state="menu"
+                menu_state = "main"
                 restart()
+            if event.key == pygame.K_1:
+                menu_state="codes"
+                print("1")
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 player_speed += 6  # Stop moving left
@@ -183,17 +187,23 @@ while True:
 
 
     if game_state=="menu":
-        start = False
-        screen.fill(bg_color)
-        draw_text("PONG", basic_font, TEXT_COL, 100)
-        draw_text("Press SPACE to start", basic_font, TEXT_COL, 200)
-        draw_text("Music from Five Nights at Freddy 6",smaler_font, TEXT_COL, 400)
-        pygame.display.flip()
         if not menu_played:
             pygame.mixer.init()
-            pygame.mixer.music.load("Thank You For Your Patience (2).mp3")
+            pygame.mixer.music.load("music/menu_bg_music.mp3")
             pygame.mixer.music.play(-1)
             menu_played = True
+        if menu_state=="main":
+            start = False
+            screen.fill(bg_color)
+            draw_text("PONG", basic_font, TEXT_COL, 100)
+            draw_text("Press SPACE to start", basic_font, TEXT_COL, 200)
+            draw_text("Music from Five Nights at Freddy 6", smaler_font, TEXT_COL, 400)
+            pygame.display.flip()
+        elif menu_state=="codes":
+            screen.fill(bg_color)
+            draw_text("CODES", basic_font, TEXT_COL, 100)
+            pygame.display.flip()
+
         continue
     elif game_state=="gameover":
         screen.fill(bg_color)
@@ -204,12 +214,12 @@ while True:
         screen.blit(resized_image, (170, 300))
         if high_score_active == 1:
             pygame.mixer.init()
-            high_score_achived = pygame.mixer.Sound("high_score.wav")
+            high_score_achived = pygame.mixer.Sound("music/high_score.wav")
             high_score_achived.play()
             high_score_active = 0
         if not gameover_played:
             pygame.mixer.music.stop()
-            pygame.mixer.music.load("gameover.mp3")
+            pygame.mixer.music.load("music/gameover_bg_music.mp3")
             pygame.mixer.music.play(-1)
             gameover_played = True
         pygame.display.flip()
