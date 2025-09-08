@@ -8,7 +8,8 @@ def ball_movement(dificult):
     """
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
-    global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, endless_high_score, start, collision,flash_timer, game_state, shrink_amount
+    global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, endless_high_score, start,collision,flash_timer, game_state, shrink_amount
+    global morewidth_powerup_active,morewidth_powerup_rect
 
     # Move the ball
     ball.x += ball_speed_x
@@ -40,9 +41,6 @@ def ball_movement(dificult):
             elif dificult == "medium":
                 if score > medium_high_score:
                     medium_high_score = score
-            elif dificult == "endless":
-                if score > endless_high_score:
-                    endless_high_score = score
             else:
                 if score > hard_high_score:
                     hard_high_score = score
@@ -56,7 +54,7 @@ def ball_movement(dificult):
 
             collision += 1
 
-# when the ball collides 10 times, the speed increases (difficulties)
+# when the ball collides, the speed increases
     if dificult == "medium" or dificult == "hard":
         if collision > 9:
             collision = 0
@@ -84,22 +82,40 @@ def ball_movement(dificult):
             player.width -= shrink_amount  # changing the width
             player.x += shrink_amount // 2  # shrink on both sides
 
-        if ball.colliderect(player) and (collision <= 20):          # Power Up 1 / increase width
-            posible_power_up = random.randint(1, 10)
-            if posible_power_up == 1:
-                player.width += shrink_amount  # Power up changing the width
-                player.x -= shrink_amount // 2
-        elif ball.colliderect(player) and (20 < collision <= 40):
-            posible_power_up2 = random.randint(1, 5)
-            if posible_power_up2 == 1:
-                player.width += shrink_amount  # Power up changing the width
-                player.x -= shrink_amount // 2
-        elif ball.colliderect(player) and (collision > 40):
-            posible_power_up3 = random.randint(1, 2)
-            if posible_power_up3 == 2:
-                player.width += shrink_amount  # Power up changing the width
-                player.x -= shrink_amount // 2
 
+        if ball.colliderect(player) and (score <= 20):          # Power Up 1 / increase width
+            posible_power_up = random.randint(1, 10)
+            if posible_power_up == 1 and not morewidth_powerup_active:
+                while True:
+                    rand_x = random.randint(40, screen_width - 40)
+                    rand_y = player.centery  # same vertical position as paddle
+                    new_rect = morewidth_powerup_img.get_rect(center=(rand_x, rand_y))
+                    if not new_rect.colliderect(player):  # make sure it’s not inside paddle
+                        morewidth_powerup_rect = new_rect
+                        morewidth_powerup_active = True
+                        break
+        elif ball.colliderect(player) and (20 < score <= 40):
+            posible_power_up = random.randint(1, 5)
+            if posible_power_up == 1 and not morewidth_powerup_active:
+                while True:
+                    rand_x = random.randint(40, screen_width - 40)
+                    rand_y = player.centery  # same vertical position as paddle
+                    new_rect = morewidth_powerup_img.get_rect(center=(rand_x, rand_y))
+                    if not new_rect.colliderect(player):  # make sure it’s not inside paddle
+                        morewidth_powerup_rect = new_rect
+                        morewidth_powerup_active = True
+                        break
+        elif ball.colliderect(player) and (score > 40):
+            posible_power_up = random.randint(1, 2)
+            if posible_power_up == 1 and not morewidth_powerup_active:
+                while True:
+                    rand_x = random.randint(40, screen_width - 40)
+                    rand_y = player.centery  # same vertical position as paddle
+                    new_rect = morewidth_powerup_img.get_rect(center=(rand_x, rand_y))
+                    if not new_rect.colliderect(player):  # make sure it’s not inside paddle
+                        morewidth_powerup_rect = new_rect
+                        morewidth_powerup_active = True
+                        break
     # Ball collision with top boundary
     if ball.top <= 0:
         ball_speed_y *= -1  # Reverse ball's vertical direction
@@ -159,6 +175,10 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Pong')  # Set window title
 img=pygame.image.load("skill-issue.png").convert_alpha() # Load the gameover pic and converts alpha to change the size
 resized_image = pygame.transform.scale(img, (150, 150))
+morewidth_powerup_img = pygame.image.load("morewidth.png").convert_alpha()
+morewidth_powerup_img = pygame.transform.scale(morewidth_powerup_img, (40, 40))
+morewidth_powerup_active = False
+morewidth_powerup_rect = None
 
 # Colors
 bg_color = pygame.Color('grey12')
@@ -225,9 +245,6 @@ while True:
                 game_state="menu"
                 menu_state = "main"
                 restart()
-            if event.key == pygame.K_5:
-                menu_state="codes"
-                print("1")
             if event.key == pygame.K_1:
                 if game_state=="menu":
                     play_state="easy"
@@ -240,6 +257,9 @@ while True:
             if event.key == pygame.K_4:
                 if game_state=="menu":
                     play_state="endless"
+            if event.key == pygame.K_5:
+                menu_state="codes"
+                print("1")
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 player_speed += 6  # Stop moving left
@@ -392,6 +412,16 @@ while True:
             # Game Logic
             ball_movement("endless")
             player_movement()
+
+            if morewidth_powerup_active:
+                screen.blit(morewidth_powerup_img, morewidth_powerup_rect)
+
+                if player.colliderect(morewidth_powerup_rect):
+                    player.width += (shrink_amount-5)
+                    player.x -= shrink_amount // 2
+                    morewidth_powerup_active = False
+                    morewidth_powerup_rect = None
+
 
             if score == 0:  # When starting the game, info to restart and go back to the menu
                 draw_text("Press SPACE to Restart (GameOver)", smaler_font, TEXT_COL, 40)
