@@ -100,12 +100,14 @@ def restart():
     """
     Resets the ball and player scores to the initial state.
     """
-    global ball_speed_x, ball_speed_y, score,moving, game_state, last_score, player_width
+    global ball_speed_x, ball_speed_y, score,moving, game_state, last_score,  screen_width, collision
     ball.center = (screen_width / 2, screen_height / 2)  # Reset ball position to center
     ball_speed_y, ball_speed_x = 0, 0  # Stop ball movement
     last_score = score
     score = 0  # Reset player score
-    player_width = 200
+    collision = 0
+    player.width = 200
+    player.x=screen_width/2 -90
 
 def draw_text(text, font, text_col, y):
     img = font.render(text, True, text_col)
@@ -140,7 +142,7 @@ ball = pygame.Rect(screen_width / 2 - 15, screen_height / 2 - 15, 30, 30)  # Bal
 
 player_height = 15
 player_width = 200
-player = pygame.Rect(screen_width/2 - 45, screen_height - 20, player_width, player_height)  # Player paddle
+player = pygame.Rect(screen_width/2 -90, screen_height - 20, player_width, player_height)  # Player paddle
 
 # Game Variables
 ball_speed_x = 0
@@ -318,7 +320,7 @@ while True:
 
         elif play_state == "hard":
             pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-            player_text = score_font.render(f'Score:{score} | High Score:{medium_high_score}', False, light_grey)
+            player_text = score_font.render(f'Score:{score} | High Score:{hard_high_score}', False, light_grey)
             # Render player score and high score
             text_rect = player_text.get_rect()
             text_rect.centerx = screen.get_width() // 2
@@ -338,7 +340,7 @@ while True:
                 draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
                 flash_timer -= 1  # count down each frame
 
-            if not (score < medium_high_score):  # flag to check if high score has been beaten (for sound effect)
+            if not (score < hard_high_score):  # flag to check if high score has been beaten (for sound effect)
                 high_score_active = 1
 
             # Update display
