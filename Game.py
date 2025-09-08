@@ -1,14 +1,14 @@
 import pygame, sys, random
 
 collision = 0
-
+player_width = 200
 
 
 def ball_movement(dificult):
     """
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
-    global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, start, collision,flash_timer, game_state
+    global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, start, collision,flash_timer, game_state, player_width
 
     # Move the ball
     ball.x += ball_speed_x
@@ -55,6 +55,8 @@ def ball_movement(dificult):
 
 # when the ball collides, the speed increases
     if dificult == "medium" or dificult == "hard":
+        if collision > 9 and dificult == "hard":
+            player_width -= 50
         if collision > 9:
             if abs(ball_speed_x) < max_speed and abs(ball_speed_y) < max_speed: #checks the absolute speed (positive) to see if we are pass the speed limit
                 collision = 0
@@ -133,7 +135,6 @@ flash_timer = 0
 ball = pygame.Rect(screen_width / 2 - 15, screen_height / 2 - 15, 30, 30)  # Ball (centered)
 
 player_height = 15
-player_width = 200
 player = pygame.Rect(screen_width/2 - 45, screen_height - 20, player_width, player_height)  # Player paddle
 
 # Game Variables
@@ -305,6 +306,35 @@ while True:
 
             if not(score < easy_high_score): #flag to check if high score has been beaten (for sound effect)
                 high_score_active=1
+
+            # Update display
+            pygame.display.flip()
+            clock.tick(60)  # Maintain 60 frames per second
+
+        elif play_state == "hard":
+            pygame.draw.ellipse(screen, orange, ball)  # Draw ball
+            player_text = score_font.render(f'Score:{score} | High Score:{medium_high_score}', False, light_grey)
+            # Render player score and high score
+            text_rect = player_text.get_rect()
+            text_rect.centerx = screen.get_width() // 2
+            text_rect.y = 10
+            screen.blit(player_text, (text_rect))  # Display score on screen
+
+            # Game Logic
+            ball_movement("medium")
+            player_movement()
+
+            if score == 0:  # When starting the game, info to restart and go back to the menu
+                draw_text("Press SPACE to Restart (GameOver)", smaler_font, TEXT_COL, 40)
+                draw_text("Press ESC to go back to menu", smaler_font, TEXT_COL, 60)
+                draw_text("HARD", score_font, TEXT_COL, 200)
+
+            if flash_timer > 0:  # Display for that the speed changed
+                draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
+                flash_timer -= 1  # count down each frame
+
+            if not (score < medium_high_score):  # flag to check if high score has been beaten (for sound effect)
+                high_score_active = 1
 
             # Update display
             pygame.display.flip()
