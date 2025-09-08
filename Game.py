@@ -8,7 +8,7 @@ def ball_movement(dificult):
     """
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
-    global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, start, collision,flash_timer, game_state, player_width
+    global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, start, collision,flash_timer, game_state
 
     # Move the ball
     ball.x += ball_speed_x
@@ -55,16 +55,18 @@ def ball_movement(dificult):
 
 # when the ball collides, the speed increases
     if dificult == "medium" or dificult == "hard":
-        if collision > 9 and dificult == "hard":
-            player_width -= 50
         if collision > 9:
+            collision = 0
             if abs(ball_speed_x) < max_speed and abs(ball_speed_y) < max_speed: #checks the absolute speed (positive) to see if we are pass the speed limit
-                collision = 0
                 ball_speed_x *= 1.2
                 ball_speed_y *= 1.2
                 speed_up = pygame.mixer.Sound("music/speed_up.wav")
                 speed_up.play()
                 flash_timer = 30 # for the displaying of the text
+                if dificult == "hard" and player.width > 50:
+                    shrink_amount = 20
+                    player.width -= shrink_amount # changing the width
+                    player.x += shrink_amount // 2 # shrink on both sides
             else:
                 collision = 0  # reset collision even if max speed reached
 
@@ -98,11 +100,12 @@ def restart():
     """
     Resets the ball and player scores to the initial state.
     """
-    global ball_speed_x, ball_speed_y, score,moving, game_state, last_score
+    global ball_speed_x, ball_speed_y, score,moving, game_state, last_score, player_width
     ball.center = (screen_width / 2, screen_height / 2)  # Reset ball position to center
     ball_speed_y, ball_speed_x = 0, 0  # Stop ball movement
     last_score = score
     score = 0  # Reset player score
+    player_width = 200
 
 def draw_text(text, font, text_col, y):
     img = font.render(text, True, text_col)
@@ -110,6 +113,7 @@ def draw_text(text, font, text_col, y):
     text_rect.centerx = screen.get_width() // 2  # Center horizontally
     text_rect.y = y  # Keep vertical position
     screen.blit(img, text_rect)
+
 
 # General setup
 pygame.mixer.pre_init(44100, -16, 1, 1024)
@@ -135,6 +139,7 @@ flash_timer = 0
 ball = pygame.Rect(screen_width / 2 - 15, screen_height / 2 - 15, 30, 30)  # Ball (centered)
 
 player_height = 15
+player_width = 200
 player = pygame.Rect(screen_width/2 - 45, screen_height - 20, player_width, player_height)  # Player paddle
 
 # Game Variables
@@ -156,7 +161,7 @@ smaler_font=pygame.font.Font('PressStart2P-Regular.ttf', 12)# Small Font
 menu_played=False # allow menu sound again
 game_state="menu" # Indicates if it suposse to be in menu, play or gameover
 menu_state="main"
-play_state="play"
+play_state="easy"
 start = False  # Indicates if the game has started
 
 # Main game loop
@@ -321,7 +326,7 @@ while True:
             screen.blit(player_text, (text_rect))  # Display score on screen
 
             # Game Logic
-            ball_movement("medium")
+            ball_movement("hard")
             player_movement()
 
             if score == 0:  # When starting the game, info to restart and go back to the menu
