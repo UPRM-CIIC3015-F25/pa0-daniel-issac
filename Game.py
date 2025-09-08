@@ -2,13 +2,13 @@ import pygame, sys, random
 
 collision = 0
 player_width = 200
-
+shrink_amount = 20
 
 def ball_movement(dificult):
     """
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
-    global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, start, collision,flash_timer, game_state
+    global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, endless_high_score, start, collision,flash_timer, game_state, shrink_amount
 
     # Move the ball
     ball.x += ball_speed_x
@@ -40,6 +40,9 @@ def ball_movement(dificult):
             elif dificult == "medium":
                 if score > medium_high_score:
                     medium_high_score = score
+            elif dificult == "endless":
+                if score > endless_high_score:
+                    endless_high_score = score
             else:
                 if score > hard_high_score:
                     hard_high_score = score
@@ -53,7 +56,7 @@ def ball_movement(dificult):
 
             collision += 1
 
-# when the ball collides, the speed increases
+# when the ball collides 10 times, the speed increases (difficulties)
     if dificult == "medium" or dificult == "hard":
         if collision > 9:
             collision = 0
@@ -69,6 +72,33 @@ def ball_movement(dificult):
                     player.x += shrink_amount // 2 # shrink on both sides
             else:
                 collision = 0  # reset collision even if max speed reached
+    if dificult == "endless":
+        if collision > 9:
+            collision = 0
+            ball_speed_x *= 1.2
+            ball_speed_y *= 1.2
+            speed_up = pygame.mixer.Sound("music/speed_up.wav")
+            speed_up.play()
+            flash_timer = 30  # for the displaying of the text
+            shrink_amount = 20
+            player.width -= shrink_amount  # changing the width
+            player.x += shrink_amount // 2  # shrink on both sides
+
+        if ball.colliderect(player) and (collision <= 20):          # Power Up 1 / increase width
+            posible_power_up = random.randint(1, 10)
+            if posible_power_up == 1:
+                player.width += shrink_amount  # Power up changing the width
+                player.x -= shrink_amount // 2
+        elif ball.colliderect(player) and (20 < collision <= 40):
+            posible_power_up2 = random.randint(1, 5)
+            if posible_power_up2 == 1:
+                player.width += shrink_amount  # Power up changing the width
+                player.x -= shrink_amount // 2
+        elif ball.colliderect(player) and (collision > 40):
+            posible_power_up3 = random.randint(1, 2)
+            if posible_power_up3 == 2:
+                player.width += shrink_amount  # Power up changing the width
+                player.x -= shrink_amount // 2
 
     # Ball collision with top boundary
     if ball.top <= 0:
@@ -105,7 +135,7 @@ def restart():
     ball_speed_y, ball_speed_x = 0, 0  # Stop ball movement
     last_score = score
     score = 0  # Reset player score
-    player_width = 200
+    player.width = 200
 
 def draw_text(text, font, text_col, y):
     img = font.render(text, True, text_col)
@@ -152,6 +182,7 @@ score = 0
 easy_high_score = 0
 medium_high_score = 0
 hard_high_score = 0
+endless_high_score = 0
 high_score_active=0
 last_score = score
 basic_font = pygame.font.Font('PressStart2P-Regular.ttf', 24)# Bigger Font
@@ -168,7 +199,7 @@ start = False  # Indicates if the game has started
 while True:
     # Event handling
     # TODO Task 4: Add your name
-    name = "Daniel F. Muñoz"
+    name = "Daniel F. Muñoz & Isaac E. Beaudry"
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Quit the game
             pygame.quit()
@@ -194,7 +225,7 @@ while True:
                 game_state="menu"
                 menu_state = "main"
                 restart()
-            if event.key == pygame.K_4:
+            if event.key == pygame.K_5:
                 menu_state="codes"
                 print("1")
             if event.key == pygame.K_1:
@@ -206,6 +237,9 @@ while True:
             if event.key == pygame.K_3:
                 if game_state=="menu":
                     play_state="hard"
+            if event.key == pygame.K_4:
+                if game_state=="menu":
+                    play_state="endless"
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 player_speed += 6  # Stop moving left
@@ -223,10 +257,11 @@ while True:
             start = False
             screen.fill(bg_color)
             draw_text("PONG", basic_font, TEXT_COL, 100)
-            draw_text("Press SPACE to start", basic_font, TEXT_COL, 200)
-            draw_text("Press 1 to play Easy", score_font, TEXT_COL, 250)
+            draw_text("Press SPACE to start", basic_font, TEXT_COL, 170)
+            draw_text("Press 1 to play Easy", score_font, TEXT_COL, 240)
             draw_text("Press 2 to play Medium", score_font, TEXT_COL, 270)
-            draw_text("Press 3 to play Hard", score_font, TEXT_COL, 290)
+            draw_text("Press 3 to play Hard", score_font, TEXT_COL, 300)
+            draw_text("Press 4 to play Endless", score_font, TEXT_COL, 330)
             draw_text("Music from Five Nights at Freddy 6", smaler_font, TEXT_COL, 400)
             pygame.display.flip()
         elif menu_state=="codes":
@@ -318,7 +353,7 @@ while True:
 
         elif play_state == "hard":
             pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-            player_text = score_font.render(f'Score:{score} | High Score:{medium_high_score}', False, light_grey)
+            player_text = score_font.render(f'Score:{score} | High Score:{hard_high_score}', False, light_grey)
             # Render player score and high score
             text_rect = player_text.get_rect()
             text_rect.centerx = screen.get_width() // 2
@@ -345,7 +380,34 @@ while True:
             pygame.display.flip()
             clock.tick(60)  # Maintain 60 frames per second
 
+        elif play_state == "endless":
+            pygame.draw.ellipse(screen, orange, ball)  # Draw ball
+            player_text = score_font.render(f'Score:{score} | High Score:{endless_high_score}', False, light_grey)
+            # Render player score and high score
+            text_rect = player_text.get_rect()
+            text_rect.centerx = screen.get_width() // 2
+            text_rect.y = 10
+            screen.blit(player_text, (text_rect))  # Display score on screen
 
+            # Game Logic
+            ball_movement("endless")
+            player_movement()
+
+            if score == 0:  # When starting the game, info to restart and go back to the menu
+                draw_text("Press SPACE to Restart (GameOver)", smaler_font, TEXT_COL, 40)
+                draw_text("Press ESC to go back to menu", smaler_font, TEXT_COL, 60)
+                draw_text("ENDLESS", score_font, TEXT_COL, 200)
+
+            if flash_timer > 0:  # Display for that the speed changed
+                draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
+                flash_timer -= 1  # count down each frame
+
+            if not (score < medium_high_score):  # flag to check if high score has been beaten (for sound effect)
+                high_score_active = 1
+
+            # Update display
+            pygame.display.flip()
+            clock.tick(60)  # Maintain 60 frames per second
 
         else:
             pygame.mixer.music.stop()
