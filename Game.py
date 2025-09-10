@@ -75,6 +75,7 @@ def ball_movement(dificult):
                     player.x += shrink_amount // 2 # shrink on both sides
             else:
                 collision = 0  # reset collision even if max speed reached
+
     if dificult == "endless":
         if collision > 9:
             collision = 0
@@ -87,7 +88,9 @@ def ball_movement(dificult):
             player.width -= shrink_amount  # changing the width
             player.x += shrink_amount // 2  # shrink on both sides
 
-        if ball.colliderect(player) and (score <= 20):  # Power Up 1 / increase width
+
+        #MORE WIDTH
+        if ball.colliderect(player) and (score <= 20):  #intial phase
             posible_power_up = random.randint(1, 500)
             if posible_power_up == 1 and not morewidth_powerup_active:
                 while True:
@@ -97,11 +100,11 @@ def ball_movement(dificult):
                     if (
                             not new_rect.colliderect(player) and
                             (not less_speed_powerup_active or not new_rect.colliderect(less_speed_powerup_rect))
-                    ):  # make sure it’s not inside paddle
+                    ):  # make sure it’s not inside paddle and not inside of the other powerup
                         morewidth_powerup_rect = new_rect
                         morewidth_powerup_active = True
                         break
-        elif ball.colliderect(player) and (20<score<40):          # Power Up 1 / increase width
+        elif ball.colliderect(player) and (20<score<40):  #Second Phase (more common but not everytime)
             posible_power_up = random.randint(1, 50)
             if posible_power_up == 1 and not morewidth_powerup_active:
                 while True:
@@ -111,11 +114,11 @@ def ball_movement(dificult):
                     if (
                             not new_rect.colliderect(player) and
                             (not less_speed_powerup_active or not new_rect.colliderect(less_speed_powerup_rect))
-                    ): # make sure it’s not inside paddle
+                    ): # make sure it’s not inside paddle and not inside of the other powerup
                         morewidth_powerup_rect = new_rect
                         morewidth_powerup_active = True
                         break
-        elif ball.colliderect(player) and (40 < score <= 60):
+        elif ball.colliderect(player) and (40 < score <= 60): #third Phase (almost every other time)
             posible_power_up = random.randint(1, 20)
             if posible_power_up == 1 and not morewidth_powerup_active:
                 while True:
@@ -129,7 +132,7 @@ def ball_movement(dificult):
                         morewidth_powerup_rect = new_rect
                         morewidth_powerup_active = True
                         break
-        elif ball.colliderect(player) and (score > 60):
+        elif ball.colliderect(player) and (score > 60): #FINAL PHASE (everytime so u dont die :) )
             posible_power_up = random.randint(1, 5)
             if posible_power_up == 1 and not morewidth_powerup_active:
                 while True:
@@ -139,14 +142,14 @@ def ball_movement(dificult):
                     if (
                             not new_rect.colliderect(player) and
                             (not less_speed_powerup_active or not new_rect.colliderect(less_speed_powerup_rect))
-                    ): # make sure it’s not inside paddle
+                    ):# make sure it’s not inside paddle and not inside of the other powerup
                         morewidth_powerup_rect = new_rect
                         less_speed_powerup_active = True
                         break
 
 
-        #Chances of the power up
-        if ball.colliderect(player) and (score < 30):
+        # LESS SPEED POWERUP
+        if ball.colliderect(player) and (score < 30): #intial phase (the ball is getting to fast to handle at this rate)
             posible_power_up2 = random.randint(1, 500)
             if posible_power_up2 == 1 and not less_speed_powerup_active:
                 while True:
@@ -156,11 +159,11 @@ def ball_movement(dificult):
                     if (
                             not new_rect.colliderect(player) and
                             (not morewidth_powerup_active or not new_rect.colliderect(morewidth_powerup_rect))
-                    ):
+                    ):# make sure it’s not inside paddle and not inside of the other powerup
                         less_speed_powerup_rect = new_rect
                         less_speed_powerup_active = True
                         break
-        elif ball.colliderect(player) and (30<=score<=80):
+        elif ball.colliderect(player) and (30<=score<=80): #third phase (more bc the ball is getting fast)
             posible_power_up2 = random.randint(1, 10)
             if posible_power_up2 == 1 and not less_speed_powerup_active:
                 while True:
@@ -170,12 +173,12 @@ def ball_movement(dificult):
                     if (
                             not new_rect.colliderect(player) and
                             (not morewidth_powerup_active or not new_rect.colliderect(morewidth_powerup_rect))
-                    ):
+                    ):# make sure it’s not inside paddle and not inside of the other powerup
                         less_speed_powerup_rect = new_rect
                         less_speed_powerup_active = True
                         break
 
-        elif ball.colliderect(player) and (score>80):
+        elif ball.colliderect(player) and (score>80): #FINAL PHASE (everytime so u dont die :) )
             posible_power_up2 = random.randint(1, 5)
             if posible_power_up2 == 1 and not less_speed_powerup_active:
                 while True:
@@ -185,10 +188,11 @@ def ball_movement(dificult):
                     if (
                             not new_rect.colliderect(player) and
                             (not morewidth_powerup_active or not new_rect.colliderect(morewidth_powerup_rect))
-                    ):
+                    ):# make sure it’s not inside paddle and not inside of the other powerup
                         less_speed_powerup_rect = new_rect
                         less_speed_powerup_active = True
                         break
+
 
     # Ball collision with top boundary
     if ball.top <= 0:
@@ -301,7 +305,7 @@ start = False  # Indicates if the game has started
 while True:
     # Event handling
     # TODO Task 4: Add your name
-    name = "Daniel F. Muñoz & Issac Beaudry"
+    name = "Daniel F. Muñoz & Issac E. Beaudry"
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Quit the game
             pygame.quit()
