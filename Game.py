@@ -1,6 +1,7 @@
 import pygame, sys, random
 
 collision = 0
+# TODO Task 1 Make the paddle bigger
 player_width = 200
 shrink_amount = 20
 
@@ -9,7 +10,7 @@ def ball_movement(dificult):
     Handles the movement of the ball and collision detection with the player and screen boundaries.
     """
     global ball_speed_x, ball_speed_y, score, easy_high_score, medium_high_score,hard_high_score, endless_high_score, start,collision,flash_timer, game_state, shrink_amount
-    global morewidth_powerup_active,morewidth_powerup_rect
+    global morewidth_powerup_active,morewidth_powerup_rect,less_speed_powerup_active,less_speed_powerup_rect
 
     # Move the ball
     ball.x += ball_speed_x
@@ -33,6 +34,7 @@ def ball_movement(dificult):
 
         if abs(ball.bottom - player.top) < 10:  # Check if ball hits the top of the paddle
 
+            # TODO Task 2: Fix score to increase by 1
             score += 1  # Increase player score
 
             if dificult == "easy":
@@ -41,9 +43,12 @@ def ball_movement(dificult):
             elif dificult == "medium":
                 if score > medium_high_score:
                     medium_high_score = score
-            else:
+            elif dificult == "hard":
                 if score > hard_high_score:
                     hard_high_score = score
+            else:
+                if score > endless_high_score:
+                    endless_high_score = score
 
             ball_speed_y *= -1  # Reverse ball's vertical direction
 
@@ -82,40 +87,109 @@ def ball_movement(dificult):
             player.width -= shrink_amount  # changing the width
             player.x += shrink_amount // 2  # shrink on both sides
 
-
-        if ball.colliderect(player) and (score <= 20):          # Power Up 1 / increase width
-            posible_power_up = random.randint(1, 10)
+        if ball.colliderect(player) and (score <= 20):  # Power Up 1 / increase width
+            posible_power_up = random.randint(1, 500)
             if posible_power_up == 1 and not morewidth_powerup_active:
                 while True:
                     rand_x = random.randint(40, screen_width - 40)
                     rand_y = player.centery  # same vertical position as paddle
                     new_rect = morewidth_powerup_img.get_rect(center=(rand_x, rand_y))
-                    if not new_rect.colliderect(player):  # make sure it’s not inside paddle
+                    if (
+                            not new_rect.colliderect(player) and
+                            (not less_speed_powerup_active or not new_rect.colliderect(less_speed_powerup_rect))
+                    ):  # make sure it’s not inside paddle
                         morewidth_powerup_rect = new_rect
                         morewidth_powerup_active = True
                         break
-        elif ball.colliderect(player) and (20 < score <= 40):
+        elif ball.colliderect(player) and (20<score<40):          # Power Up 1 / increase width
+            posible_power_up = random.randint(1, 50)
+            if posible_power_up == 1 and not morewidth_powerup_active:
+                while True:
+                    rand_x = random.randint(40, screen_width - 40)
+                    rand_y = player.centery  # same vertical position as paddle
+                    new_rect = morewidth_powerup_img.get_rect(center=(rand_x, rand_y))
+                    if (
+                            not new_rect.colliderect(player) and
+                            (not less_speed_powerup_active or not new_rect.colliderect(less_speed_powerup_rect))
+                    ): # make sure it’s not inside paddle
+                        morewidth_powerup_rect = new_rect
+                        morewidth_powerup_active = True
+                        break
+        elif ball.colliderect(player) and (40 < score <= 60):
+            posible_power_up = random.randint(1, 20)
+            if posible_power_up == 1 and not morewidth_powerup_active:
+                while True:
+                    rand_x = random.randint(40, screen_width - 40)
+                    rand_y = player.centery  # same vertical position as paddle
+                    new_rect = morewidth_powerup_img.get_rect(center=(rand_x, rand_y))
+                    if (
+                            not new_rect.colliderect(player) and
+                            (not less_speed_powerup_active or not new_rect.colliderect(less_speed_powerup_rect))
+                    ):  # make sure it’s not inside paddle
+                        morewidth_powerup_rect = new_rect
+                        morewidth_powerup_active = True
+                        break
+        elif ball.colliderect(player) and (score > 60):
             posible_power_up = random.randint(1, 5)
             if posible_power_up == 1 and not morewidth_powerup_active:
                 while True:
                     rand_x = random.randint(40, screen_width - 40)
                     rand_y = player.centery  # same vertical position as paddle
                     new_rect = morewidth_powerup_img.get_rect(center=(rand_x, rand_y))
-                    if not new_rect.colliderect(player):  # make sure it’s not inside paddle
+                    if (
+                            not new_rect.colliderect(player) and
+                            (not less_speed_powerup_active or not new_rect.colliderect(less_speed_powerup_rect))
+                    ): # make sure it’s not inside paddle
                         morewidth_powerup_rect = new_rect
-                        morewidth_powerup_active = True
+                        less_speed_powerup_active = True
                         break
-        elif ball.colliderect(player) and (score > 40):
-            posible_power_up = random.randint(1, 2)
-            if posible_power_up == 1 and not morewidth_powerup_active:
+
+
+        #Chances of the power up
+        if ball.colliderect(player) and (score < 30):
+            posible_power_up2 = random.randint(1, 500)
+            if posible_power_up2 == 1 and not less_speed_powerup_active:
                 while True:
                     rand_x = random.randint(40, screen_width - 40)
-                    rand_y = player.centery  # same vertical position as paddle
-                    new_rect = morewidth_powerup_img.get_rect(center=(rand_x, rand_y))
-                    if not new_rect.colliderect(player):  # make sure it’s not inside paddle
-                        morewidth_powerup_rect = new_rect
-                        morewidth_powerup_active = True
+                    y=player.centery
+                    new_rect = less_speed_powerup_img.get_rect(center=(rand_x, y))
+                    if (
+                            not new_rect.colliderect(player) and
+                            (not morewidth_powerup_active or not new_rect.colliderect(morewidth_powerup_rect))
+                    ):
+                        less_speed_powerup_rect = new_rect
+                        less_speed_powerup_active = True
                         break
+        elif ball.colliderect(player) and (30<=score<=80):
+            posible_power_up2 = random.randint(1, 10)
+            if posible_power_up2 == 1 and not less_speed_powerup_active:
+                while True:
+                    rand_x = random.randint(40, screen_width - 40)
+                    y=player.centery
+                    new_rect = less_speed_powerup_img.get_rect(center=(rand_x, y))
+                    if (
+                            not new_rect.colliderect(player) and
+                            (not morewidth_powerup_active or not new_rect.colliderect(morewidth_powerup_rect))
+                    ):
+                        less_speed_powerup_rect = new_rect
+                        less_speed_powerup_active = True
+                        break
+
+        elif ball.colliderect(player) and (score>80):
+            posible_power_up2 = random.randint(1, 5)
+            if posible_power_up2 == 1 and not less_speed_powerup_active:
+                while True:
+                    rand_x = random.randint(40, screen_width - 40)
+                    y=player.centery
+                    new_rect = less_speed_powerup_img.get_rect(center=(rand_x, y))
+                    if (
+                            not new_rect.colliderect(player) and
+                            (not morewidth_powerup_active or not new_rect.colliderect(morewidth_powerup_rect))
+                    ):
+                        less_speed_powerup_rect = new_rect
+                        less_speed_powerup_active = True
+                        break
+
     # Ball collision with top boundary
     if ball.top <= 0:
         ball_speed_y *= -1  # Reverse ball's vertical direction
@@ -146,12 +220,13 @@ def restart():
     """
     Resets the ball and player scores to the initial state.
     """
-    global ball_speed_x, ball_speed_y, score,moving, game_state, last_score, player_width
-    ball.center = (screen_width / 2, screen_height / 2)  # Reset ball position to center
+    global ball_speed_x, ball_speed_y, score,moving, game_state, last_score, player_width, morewidth_powerup_active
+    ball.center = (screen_width // 2, screen_height // 2)  # Reset ball position to center
     ball_speed_y, ball_speed_x = 0, 0  # Stop ball movement
     last_score = score
     score = 0  # Reset player score
     player.width = 200
+    morewidth_powerup_active = False
 
 def draw_text(text, font, text_col, y):
     img = font.render(text, True, text_col)
@@ -180,17 +255,24 @@ morewidth_powerup_img = pygame.transform.scale(morewidth_powerup_img, (40, 40))
 morewidth_powerup_active = False
 morewidth_powerup_rect = None
 
+less_speed_powerup_img = pygame.image.load("less_speed.png").convert_alpha()
+less_speed_powerup_img = pygame.transform.scale(less_speed_powerup_img, (40, 40))
+less_speed_powerup_active = False
+less_speed_powerup_rect = None
+sound_played = 0
+gameover_played = False
+
+
 # Colors
 bg_color = pygame.Color('grey12')
 TEXT_COL = (255, 255, 255)
 flash_timer = 0
 
 # Game Rectangles (ball and player paddle)
-ball = pygame.Rect(screen_width / 2 - 15, screen_height / 2 - 15, 30, 30)  # Ball (centered)
+ball = pygame.Rect(screen_width // 2 - 15, screen_height // 2 - 15, 30, 30)  # Ball (centered)
 
 player_height = 15
-player_width = 200
-player = pygame.Rect(screen_width/2 - 45, screen_height - 20, player_width, player_height)  # Player paddle
+player = pygame.Rect(screen_width//2 - 45, screen_height - 20, player_width, player_height)  # Player paddle
 
 # Game Variables
 ball_speed_x = 0
@@ -219,7 +301,7 @@ start = False  # Indicates if the game has started
 while True:
     # Event handling
     # TODO Task 4: Add your name
-    name = "Daniel F. Muñoz & Isaac E. Beaudry"
+    name = "Daniel F. Muñoz & Issac Beaudry"
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Quit the game
             pygame.quit()
@@ -247,15 +329,23 @@ while True:
                 restart()
             if event.key == pygame.K_1:
                 if game_state=="menu":
+                    change_sound = pygame.mixer.Sound("music/change_dificulty.wav")
+                    change_sound.play()
                     play_state="easy"
             if event.key == pygame.K_2:
                 if game_state=="menu":
+                    change_sound = pygame.mixer.Sound("music/change_dificulty.wav")
+                    change_sound.play()
                     play_state="medium"
             if event.key == pygame.K_3:
                 if game_state=="menu":
+                    change_sound = pygame.mixer.Sound("music/change_dificulty.wav")
+                    change_sound.play()
                     play_state="hard"
             if event.key == pygame.K_4:
                 if game_state=="menu":
+                    change_sound = pygame.mixer.Sound("music/change_dificulty.wav")
+                    change_sound.play()
                     play_state="endless"
             if event.key == pygame.K_5:
                 menu_state="codes"
@@ -276,9 +366,18 @@ while True:
         if menu_state=="main":
             start = False
             screen.fill(bg_color)
-            draw_text("PONG", basic_font, TEXT_COL, 100)
-            draw_text("Press SPACE to start", basic_font, TEXT_COL, 170)
-            draw_text("Press 1 to play Easy", score_font, TEXT_COL, 240)
+            draw_text("PONG", basic_font, TEXT_COL, 80)
+            draw_text("Press SPACE to start", basic_font, TEXT_COL, 150)
+            draw_text(f"Difficulty: {play_state}" , score_font, TEXT_COL, 180)
+            if play_state == "easy":
+                draw_text(f"High Score: {easy_high_score}", score_font, TEXT_COL, 200)
+            elif play_state == "medium":
+                draw_text(f"High Score: {medium_high_score}", score_font, TEXT_COL, 200)
+            elif play_state == "hard":
+                draw_text(f"High Score: {hard_high_score}", score_font, TEXT_COL, 200)
+            else:
+                draw_text(f"High Score: {endless_high_score}", score_font, TEXT_COL, 200)
+            draw_text("Press 1 to  play Easy", score_font, TEXT_COL, 240)
             draw_text("Press 2 to play Medium", score_font, TEXT_COL, 270)
             draw_text("Press 3 to play Hard", score_font, TEXT_COL, 300)
             draw_text("Press 4 to play Endless", score_font, TEXT_COL, 330)
@@ -312,20 +411,30 @@ while True:
 
     else:
         # Visuals
+        # TODO Task 3: Change color of the ball
         orange = pygame.Color('orange')
         light_grey = pygame.Color('grey83')
         red = pygame.Color('red')
         screen.fill(bg_color)  # Clear screen with background color
         pygame.draw.rect(screen, light_grey, player)  # Draw player paddle
+        pygame.draw.ellipse(screen, orange, ball)  # Draw ball
+
+        pygame.draw.ellipse(screen, orange, ball)  # Draw ball
+        if play_state == "easy":
+            player_text = score_font.render(f'Score:{score} | High Score:{endless_high_score}', False, light_grey)
+        elif play_state == "medium":
+            player_text = score_font.render(f'Score:{score} | High Score:{medium_high_score}', False, light_grey)
+        elif play_state == "hard":
+            player_text = score_font.render(f'Score:{score} | High Score:{hard_high_score}', False, light_grey)
+        elif play_state == "endless":
+            player_text = score_font.render(f'Score:{score} | High Score:{endless_high_score}', False, light_grey)
+        # Render player score and high score
+        text_rect = player_text.get_rect()
+        text_rect.centerx = screen.get_width() // 2
+        text_rect.y = 10
+        screen.blit(player_text, text_rect)  # Display score on screen
 
         if play_state == "medium":
-            pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-            player_text = score_font.render(f'Score:{score} | High Score:{medium_high_score}', False, light_grey)
-            # Render player score and high score
-            text_rect = player_text.get_rect()
-            text_rect.centerx = screen.get_width() // 2
-            text_rect.y = 10
-            screen.blit(player_text, (text_rect))  # Display score on screen
 
             # Game Logic
             ball_movement("medium")
@@ -340,7 +449,7 @@ while True:
                 draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
                 flash_timer -= 1  # count down each frame
 
-            if not(score < medium_high_score): #flag to check if high score has been beaten (for sound effect)
+            if not(score < medium_high_score) and medium_high_score != 0: #flag to check if high score has been beaten (for sound effect)
                 high_score_active=1
 
             # Update display
@@ -348,14 +457,6 @@ while True:
             clock.tick(60)  # Maintain 60 frames per second
 
         elif play_state == "easy":
-            pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-            player_text = score_font.render(f'Score:{score} | High Score:{easy_high_score}', False, light_grey)
-            # Render player score and high score
-            text_rect = player_text.get_rect()
-            text_rect.centerx = screen.get_width() // 2
-            text_rect.y = 10
-            screen.blit(player_text, (text_rect))  # Display score on screen
-
             ball_movement("easy")
             player_movement()
 
@@ -364,7 +465,7 @@ while True:
                 draw_text("Press ESC to go back to menu", smaler_font, TEXT_COL, 60)
                 draw_text("EASY", score_font, TEXT_COL, 200)
 
-            if not(score < easy_high_score): #flag to check if high score has been beaten (for sound effect)
+            if not(score < easy_high_score) and easy_high_score != 0: #flag to check if high score has been beaten (for sound effect)
                 high_score_active=1
 
             # Update display
@@ -372,14 +473,6 @@ while True:
             clock.tick(60)  # Maintain 60 frames per second
 
         elif play_state == "hard":
-            pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-            player_text = score_font.render(f'Score:{score} | High Score:{hard_high_score}', False, light_grey)
-            # Render player score and high score
-            text_rect = player_text.get_rect()
-            text_rect.centerx = screen.get_width() // 2
-            text_rect.y = 10
-            screen.blit(player_text, (text_rect))  # Display score on screen
-
             # Game Logic
             ball_movement("hard")
             player_movement()
@@ -393,7 +486,7 @@ while True:
                 draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
                 flash_timer -= 1  # count down each frame
 
-            if not (score < medium_high_score):  # flag to check if high score has been beaten (for sound effect)
+            if not (score < hard_high_score) and hard_high_score != 0:  # flag to check if high score has been beaten (for sound effect)
                 high_score_active = 1
 
             # Update display
@@ -401,26 +494,38 @@ while True:
             clock.tick(60)  # Maintain 60 frames per second
 
         elif play_state == "endless":
-            pygame.draw.ellipse(screen, orange, ball)  # Draw ball
-            player_text = score_font.render(f'Score:{score} | High Score:{endless_high_score}', False, light_grey)
-            # Render player score and high score
-            text_rect = player_text.get_rect()
-            text_rect.centerx = screen.get_width() // 2
-            text_rect.y = 10
-            screen.blit(player_text, (text_rect))  # Display score on screen
-
             # Game Logic
             ball_movement("endless")
             player_movement()
 
             if morewidth_powerup_active:
                 screen.blit(morewidth_powerup_img, morewidth_powerup_rect)
+                if sound_played == 0:
+                    morewidth_sound = pygame.mixer.Sound("music/morewidth_powerup.wav")
+                    morewidth_sound.play()
+                    sound_played = 1
 
                 if player.colliderect(morewidth_powerup_rect):
-                    player.width += (shrink_amount-5)
+                    player.width += shrink_amount
                     player.x -= shrink_amount // 2
                     morewidth_powerup_active = False
                     morewidth_powerup_rect = None
+                    sound_played = 0
+
+            if less_speed_powerup_active:
+                screen.blit(less_speed_powerup_img, less_speed_powerup_rect)
+                if sound_played == 0:
+                    morewidth_sound = pygame.mixer.Sound("music/morewidth_powerup.wav")
+                    morewidth_sound.play()
+                    sound_played = 1
+
+                if player.colliderect(less_speed_powerup_rect):
+                    ball_speed_x/=1.5
+                    ball_speed_y /= 1.5
+                    less_speed_powerup_active = False
+                    less_speed_powerup_rect = None
+                    sound_played = 0
+
 
 
             if score == 0:  # When starting the game, info to restart and go back to the menu
@@ -429,10 +534,15 @@ while True:
                 draw_text("ENDLESS", score_font, TEXT_COL, 200)
 
             if flash_timer > 0:  # Display for that the speed changed
-                draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
-                flash_timer -= 1  # count down each frame
+                if play_state=="medium":
+                    draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
+                    flash_timer -= 1  # count down each frame
+                elif play_state in ["hard", "endless"]:
+                    draw_text("SPEED UP!", basic_font, TEXT_COL, 200)
+                    draw_text("LESS PADDLE!", basic_font, TEXT_COL, 300)
+                    flash_timer -= 1  # count down each frame`
 
-            if not (score < medium_high_score):  # flag to check if high score has been beaten (for sound effect)
+            if not (score < endless_high_score) and endless_high_score != 0 :  # flag to check if high score has been beaten (for sound effect)
                 high_score_active = 1
 
             # Update display
